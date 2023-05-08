@@ -1,0 +1,71 @@
+use super::*;
+
+pub struct ShortPosition {
+    counter_type: CounterType,
+    inner: PositionAndStatusInner,
+}
+
+impl ShortPosition {
+    const ADDITIONAL_DATA_SIZE: usize = 0;
+    const PREFIX_SIZE: usize = 0;
+
+    pub fn new(counter_type: CounterType) -> Self {
+        Self {
+            counter_type,
+            inner: PositionAndStatusInner::new(
+                counter_type,
+                Self::PREFIX_SIZE,
+                Self::ADDITIONAL_DATA_SIZE,
+            ),
+        }
+    }
+
+    pub fn counter_type(&self) -> CounterType {
+        self.counter_type
+    }
+}
+
+impl PositionAndStatusOuter for ShortPosition {
+    fn inner(&self) -> &PositionAndStatusInner {
+        &self.inner
+    }
+}
+
+impl AsMut<[u8]> for ShortPosition {
+    fn as_mut(&mut self) -> &mut [u8] {
+        self.inner.as_mut()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_singleturn_position() {
+        use std::io::Write;
+
+        let mut pos = ShortPosition::new(CounterType::SingleTurn);
+
+        pos.as_mut().write_all(&[0b00000000, 0b000000_00]).unwrap();
+        assert_eq!(pos.position(), 0);
+        pos.as_mut().write_all(&[0b00000000, 0b000001_00]).unwrap();
+        assert_eq!(pos.position(), 1);
+        pos.as_mut().write_all(&[0b11111111, 0b111111_00]).unwrap();
+        assert_eq!(pos.position(), -1);
+        pos.as_mut().write_all(&[0b01111111, 0b111111_00]).unwrap();
+        assert_eq!(pos.position(), 8191);
+        pos.as_mut().write_all(&[0b10000000, 0b000000_00]).unwrap();
+        assert_eq!(pos.position(), -8192);
+        pos.as_mut().write_all(&[0b01001000, 0b100010_00]).unwrap();
+        assert_eq!(pos.position(), 4642);
+        pos.as_mut().write_all(&[0b11100001, 0b001100_00]).unwrap();
+        assert_eq!(pos.position(), -1972);
+        pos.as_mut().write_all(&[0b00101111, 0b100001_00]).unwrap();
+        assert_eq!(pos.position(), 3041);
+        pos.as_mut().write_all(&[0b11111011, 0b010010_00]).unwrap();
+        assert_eq!(pos.position(), -302);
+        pos.as_mut().write_all(&[0b00001001, 0b011101_00]).unwrap();
+        assert_eq!(pos.position(), 605);
+    }
+}
