@@ -4,6 +4,9 @@ version = "0.1.0"
 authors = ["Akihiko Miyadera <miyadera@smilerobotics.com>"]
 edition = "2021"
 publish = true
+description = "R485 Driver for Orbis Rotary Absolute Magnetic Encoder Module."
+license = "Apache-2.0"
+repository = "https://github.com/smilerobotics/orbis_encoder"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
